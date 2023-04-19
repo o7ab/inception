@@ -1,0 +1,65 @@
+version: "3.9"
+services:
+  nginx:
+    build: ./nginx
+    container_name: nginx
+    ports:
+      - "443:443"
+    depends_on:
+      - wordpress
+    networks:
+      - my-network
+    volumes:
+      - wordpress_data:/var/www/html
+    restart: on-failure
+
+  wordpress:
+    build: ./wordpress
+    ports:
+      - "9000:9000"
+    env_file:
+      - .env
+    container_name: wordpress
+    networks:
+      - my-network
+    depends_on:
+      - mariadb
+    volumes:
+      - wordpress_data:/var/www/html
+    restart: on-failure
+
+  mariadb:
+    container_name: mariadb
+    ports:
+      - "3306:3306"
+    build:
+      context: ./mariaDB
+      args:
+        SQL_DB_NAME: ${SQL_DB_NAME}
+        SQL_USERNAME: ${SQL_USERNAME}
+        SQL_PASSWORD: ${SQL_PASSWORD}
+        SQL_ROOT_PASSWORD: ${SQL_ROOT_PASSWORD}
+        SQL_HOST: ${SQL_HOST}
+    networks:
+      - my-network
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: on-failure
+
+networks:
+  my-network:
+    name: docker-network
+
+volumes:
+  wordpress_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /Users/isaad/data/wp
+  db_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /Users/isaad/data/sql

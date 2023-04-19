@@ -1,10 +1,9 @@
-FROM nginx
+FROM debian:latest
 
-RUN apt-get update && \
-	apt-get install openssl
-RUN openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 \ 
-	-subj "/C=US/ST=California/L=San Francisco/O=Example Corp/CN=example.com" \
-	-keyout /etc/nginx/certs/example.key \ 
-	-out /etc/nginx/certs/example.crt
+RUN apt-get update && apt-get install -y nginx
 
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+RUN sed -i 's/# TLSv1.3/TLSv1.3/g' /etc/nginx/nginx.conf
+
+EXPOSE 8080
+
+CMD ["nginx", "-g", "daemon off;"]
