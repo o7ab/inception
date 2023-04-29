@@ -1,18 +1,33 @@
-FROM debian:latest
+FROM debian:buster
 
-RUN apt-get update && apt-get install -y mariadb-server mariadb-client
+ARG MYSQL_DATABASE
+ARG MYSQL_PASSWORD
+ARG MYSQL_USER
+ARG MYSQL_ROOT_PASSWORD
 
-RUN mkdir -p /var/run/mysqld \
-&& chown -R mysql:mysql /var/run/mysqld \
-&& chmod 777 /var/run/mysqld
+RUN apt-get update && apt-get upgrade -y
+
+RUN apt-get install -y \
+    mariadb-server
+
+# Give right to mysql group on the file
+# creates a directory to hold the MySQL socket file.
+RUN mkdir -p /var/run/mysql
+
+RUN chown -R mysql:mysql /var/run/mysql
+
+RUN service mysql start \
+    &&  mysql -u root -e   "CREATE DATABASE IF NOT EXISTS $MYSQL_DATABASE; \
+                        ALTER USER 'root'@'localhost' IDENTIFIED BY '$MYSQL_ROOT_PASSWORD'; \
+                        GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO '$MYSQL_USER'@'%' IDENTIFIED BY '$MYSQL_PASSWORD'; \
+                        FLUSH PRIVILEGES;"
+
+COPY ./conf/mariadb.conf /etc/mysql/mariadb.conf.d/50-server.cnf
 
 EXPOSE 3306
 
-COPY ./tools/mariadb.sh /usr/local/bin/
-# COPY ./conf/wordpress.sql /usr/local/bin/
-RUN chmod +x /usr/local/bin/mariadb.sh
-# RUN chmod +x /usr/local/bin/wordpress.sql
+RUN apt-get install -y dumb-init
 
-ENTRYPOINT [ "/usr/local/bin/mariadb.sh" ]
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 
 CMD ["mysqld", "--bind-address=0.0.0.0"]

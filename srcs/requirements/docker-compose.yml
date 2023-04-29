@@ -1,4 +1,4 @@
-version: "3.9"
+version: '3.9'
 services:
   nginx:
     build: ./nginx
@@ -10,8 +10,8 @@ services:
     networks:
       - my-network
     volumes:
-      - wordpress_data:/var/www/html
-    restart: on-failure
+      - wordpress_data:/var/www/html/wordpress
+    restart: always
 
   wordpress:
     build: ./wordpress
@@ -25,26 +25,25 @@ services:
     depends_on:
       - mariadb
     volumes:
-      - wordpress_data:/var/www/html
-    restart: on-failure
+      - wordpress_data:/var/www/html/wordpress
+    restart: always
 
   mariadb:
     container_name: mariadb
     ports:
       - "3306:3306"
     build:
-      context: ./mariaDB
+      context: ./mariadb
       args:
-        SQL_DB_NAME: ${SQL_DB_NAME}
-        SQL_USERNAME: ${SQL_USERNAME}
-        SQL_PASSWORD: ${SQL_PASSWORD}
-        SQL_ROOT_PASSWORD: ${SQL_ROOT_PASSWORD}
-        SQL_HOST: ${SQL_HOST}
+        MYSQL_DATABASE: ${MYSQL_DATABASE}
+        MYSQL_USER: ${MYSQL_USER}
+        MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     networks:
       - my-network
     volumes:
       - db_data:/var/lib/mysql
-    restart: on-failure
+    restart: always
 
 networks:
   my-network:
@@ -56,10 +55,10 @@ volumes:
     driver_opts:
       o: bind
       type: none
-      device: /Users/isaad/data/wp
+      device: /Users/oabushar/data/wp
   db_data:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: /Users/isaad/data/sql
+      device: /Users/oabushar/data/sql
