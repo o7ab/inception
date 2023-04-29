@@ -10,7 +10,6 @@ RUN apt-get update && apt-get upgrade -y
 RUN apt-get install -y \
     mariadb-server
 
-# Give right to mysql group on the file
 # creates a directory to hold the MySQL socket file.
 RUN mkdir -p /var/run/mysql
 
